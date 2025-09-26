@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr.Connect - Doctor Appointment Booking</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #000080; /* Navy Blue */
+            --secondary-color: #28a745; /* Calming Green */
+            --background-color: #f4f8fb;
+            --header-color: #000066; /* Darker Navy */
+            --text-dark: #333;
+            --text-light: #fff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; padding: 0;
+            
+            /* --- THEMED BACKGROUND --- */
+            background-color: #eaf3f9; 
+            background: url("https://media.globaldev.tech/images/how_to_build_a_doctor_appointment_app_for_y.format-webp.webp")
+                no-repeat center center fixed;
+            background-size: cover;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        /* --- Header & Navigation --- */
+        header {
+            background: var(--primary-color); /* Navy Blue */
+            color: var(--text-light);
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
+            position: relative;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.2em;
+            letter-spacing: 1px;
+        }
+        header p { margin: 5px 0 0; font-size: 1.1em; opacity: 0.9; }
+
+        nav {
+            background: var(--header-color); /* Darker Navy */
+            padding: 10px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        nav a {
+            color: var(--text-light);
+            text-decoration: none;
+            margin: 0 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.3s, background-color 0.3s;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        nav a:hover, nav a.nav-active { 
+            color: #b3e0ff;
+            background-color: rgba(255, 255, 255, 0.15); 
+        }
+        nav a i { margin-right: 5px; }
+
+        /* --- Main Content Containers --- */
+        .container {
+            width: 90%;
+            max-width: 950px;
+            margin: 30px auto;
+            background: var(--text-light);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0px 8px 25px rgba(0,0,0,0.15); 
+            border-top: 5px solid var(--primary-color);
+            display: none; 
+        }
+        .active { display: block; }
+
+        h2 { 
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color); 
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            /* Added positioning context for the contained back button */
+            position: relative;
+        }
+        
+        /* --- NEW STYLES: Back Button Inside H2 --- */
+        .back-button-container {
+            position: absolute;
+            right: 0; /* Align to the right edge of the h2 parent */
+            top: 50%;
+            transform: translateY(-50%);
+            display: none; /* Managed by JS */
+        }
+        .back-button {
+            color: var(--primary-color);
+            background: rgba(0, 0, 128, 0.05); /* Light navy background */
+            padding: 5px 10px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.8em; /* Smaller size to fit next to title */
+            transition: background 0.3s;
+        }
+        .back-button:hover {
+            background: rgba(0, 0, 128, 0.15);
+        }
+
+        /* --- Doctor List Section (Existing Styles) --- */
+        #doctors input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        #doctors input[type="text"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        .doctor-card { 
+            border: 1px solid #e0e0e0; 
+            border-left: 5px solid var(--secondary-color); 
+            border-radius: 10px; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            transition: transform 0.5s ease-in-out, box-shadow 0.5s ease-in-out, border-radius 0.5s ease-in-out; 
+            background: #fff;
+        }
+        .doctor-card:hover { 
+            transform: scale(1.02) ; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border-radius: 25px; 
+            border-left-width: 10px; 
+        }
+        .doctor-info { 
+            display: flex; 
+            align-items: center;
+        }
+        .doctor-info img { 
+            width: 70px; 
+            height: 70px; 
+            border-radius: 50%; 
+            margin-right: 20px; 
+            object-fit: cover;
+            border: 3px solid var(--secondary-color);
+        }
+        .doctor-info strong { 
+            font-size: 1.1em; 
+            color: var(--header-color); 
+        }
+        .doc-location { 
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 5px;
+        }
+        .doc-location i {
+            color: var(--primary-color);
+            margin-right: 5px;
+        }
+        .doctor-card button { 
+            background: var(--secondary-color);
+            color: var(--text-light); 
+            border: none; 
+            padding: 12px 22px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            transition: background 0.3s;
+            font-weight: 700; 
+            font-size: 1.05em;
+        }
+        .doctor-card button:hover { 
+            background: #218838; 
+        }
+
+        /* --- Booking Form Section --- */
+        form { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr;
+            gap: 20px; 
+        }
+        form input, form select, form textarea { 
+            padding: 12px; 
+            border: 1px solid #ccc; 
+            border-radius: 6px; 
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        form input:focus, form textarea:focus { 
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        form textarea { 
+            grid-column: 1 / -1; 
+            resize: vertical;
+        }
+        form button { 
+            grid-column: 1 / -1;
+            background: var(--secondary-color);
+            color: var(--text-light); 
+            padding: 15px; 
+            border: none; 
+            border-radius: 6px; 
+            margin-top: 10px; 
+            cursor: pointer; 
+            font-size: 1.2em; 
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        form button:hover { 
+            background: #218838; 
+        }
+
+        /* --- Appointment List & Location styles omitted for brevity, no change needed --- */
+        .appointment-card { 
+            border: 1px solid var(--primary-color); 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            border-radius: 8px; 
+            background: #e6f2ff; 
+            transition: transform 0.3s;
+            line-height: 1.8;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .appointment-card:hover { 
+            transform: scale(1.01); 
+        }
+
+        .location-card {
+            border: 1px solid #ddd;
+            border-left: 5px solid var(--primary-color); 
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+        }
+        .location-card:hover { 
+            transform: scale(1.005);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .location-card h3 {
+            color: var(--header-color);
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .location-card p i {
+            color: var(--secondary-color);
+            margin-right: 8px;
+        }
+        .map-placeholder {
+            margin-top: 15px;
+            padding: 15px;
+            border: 1px dashed #ccc;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .map-placeholder a {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 25px; 
+            text-decoration: none;
+            border-radius: 6px; 
+            font-weight: 700; 
+            transition: background 0.3s;
+            font-size: 1.1em;
+        }
+        .map-placeholder a:hover {
+            background: var(--header-color);
+        }
+        /* --- Modal (Existing Styles) --- */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 9999; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.6); 
+            justify-content: center; 
+            align-items: center;
+        }
+        .modal-content { 
+            background: var(--text-light); 
+            padding: 30px; 
+            border-radius: 10px; 
+            max-width: 300px; 
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-content i {
+            color: var(--secondary-color);
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        .modal-content button { 
+            background: var(--secondary-color);
+            color: var(--text-light);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1><i class="fas fa-stethoscope"></i> Dr.Connect</h1>
+    <p>Your instant gateway to quality healthcare services</p>
+</header>
+
+<nav>
+    <a class="nav-active" onclick="showPage('home')"><i class="fas fa-home"></i> Home</a>
+    <a onclick="showPage('doctors')"><i class="fas fa-user-md"></i> Doctors</a>
+    <a onclick="showPage('book')"><i class="fas fa-calendar-check"></i> Book Appointment</a>
+    <a onclick="showPage('myappointments')"><i class="fas fa-notes-medical"></i> My Appointments</a>
+    <a onclick="showPage('locations')"><i class="fas fa-hospital-alt"></i> Locations</a>
+</nav>
+
+<div class="container active" id="home">
+    <h2 style="border-bottom: none; text-align: center;">Welcome to Dr.Connect</h2>
+    <div style="background: #e6f2ff; padding: 40px; border-radius: 10px; text-align: center;">
+        <p style="font-size: 1.2em; margin-bottom: 20px;">
+            Our platform helps you find the right doctors and book appointments instantly.
+        </p>
+        <button onclick="showPage('doctors')" style="background: var(--secondary-color); color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; font-size: 1.3em; font-weight: bold; transition: background 0.3s; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+            <i class="fas fa-search" style="font-size: 1.1em; margin-right: 8px;"></i> Find a Specialist Now
+        </button>
+    </div>
+</div>
+
+<div class="container" id="doctors">
+    <h2><i class="fas fa-user-md"></i> Available Doctors
+        <div id="backButton_doctors" class="back-button-container">
+            <a href="javascript:void(0)" class="back-button" onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</a>
+        </div>
+    </h2>
+    <input type="text" id="searchDoctor" placeholder="Search by name, specialty, or location...">
+    
+    <div class="doctor-card">
+        <div class="doctor-info">
+            <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Dr. Asha Sharma">
+            <div>
+                <strong>Dr. Asha Sharma</strong> - Cardiologist<br>
+                <small><i class="fas fa-star" style="color:gold;"></i> 4.8 | 10 years experience</small>
+                <p class="doc-location"><i class="fas fa-map-marker-alt"></i> **Main Campus** - 450 Health Avenue</p> </div>
+        </div>
+        <button onclick="selectDoctor('Dr. Asha Sharma - Cardiologist @ Main Campus')"><i class="fas fa-calendar-alt"></i> Book Slot</button>
+    </div>
+    
+    <div class="doctor-card">
+        <div class="doctor-info">
+            <img src="https://randomuser.me/api/portraits/men/66.jpg" alt="Dr. Ravi Kumar">
+            <div>
+                <strong>Dr. Ravi Kumar</strong> - Dentist<br>
+                <small><i class="fas fa-star" style="color:gold;"></i> 4.5 | 7 years experience</small>
+                <p class="doc-location"><i class="fas fa-map-marker-alt"></i> **West Clinic** - 789 Wellness Drive</p> </div>
+        </div>
+        <button onclick="selectDoctor('Dr. Ravi Kumar - Dentist @ West Clinic')"><i class="fas fa-calendar-alt"></i> Book Slot</button>
+    </div>
+    
+    <div class="doctor-card">
+        <div class="doctor-info">
+            <img src="https://randomuser.me/api/portraits/women/67.jpg" alt="Dr. Sneha Patel">
+            <div>
+                <strong>Dr. Sneha Patel</strong> - Dermatologist<br>
+                <small><i class="fas fa-star" style="color:gold;"></i> 4.9 | 5 years experience</small>
+                <p class="doc-location"><i class="fas fa-map-marker-alt"></i> **Main Campus** - 450 Health Avenue</p> </div>
+        </div>
+        <button onclick="selectDoctor('Dr. Sneha Patel - Dermatologist @ Main Campus')"><i class="fas fa-calendar-alt"></i> Book Slot</button>
+    </div>
+</div>
+
+<div class="container" id="book">
+    <h2><i class="fas fa-calendar-plus"></i> Book Appointment
+        <div id="backButton_book" class="back-button-container">
+            <a href="javascript:void(0)" class="back-button" onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</a>
+        </div>
+    </h2>
+    <form id="appointmentForm">
+        <input type="text" id="patientName" placeholder="Your Full Name" required>
+        <input type="email" id="email" placeholder="Email Address" required>
+        <input type="tel" id="phone" placeholder="Phone Number" required>
+        <input type="text" id="doctorName" placeholder="Selected Doctor" readonly required style="background: #f0f0f0; font-weight: bold;">
+        <input type="date" id="date" required>
+        <input type="time" id="time" required>
+        <textarea id="reason" rows="3" placeholder="Reason for visit (e.g., Cold symptoms, Follow-up)" required></textarea>
+        <button type="submit"><i class="fas fa-check-circle"></i> Confirm and Book Appointment</button>
+    </form>
+</div>
+
+<div class="container" id="myappointments">
+    <h2><i class="fas fa-notes-medical"></i> My Appointments
+        <div id="backButton_myappointments" class="back-button-container">
+            <a href="javascript:void(0)" class="back-button" onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</a>
+        </div>
+    </h2>
+    <div class="appointment-list" id="appointmentList">
+        <p>No appointments yet. Book one from the Doctors section!</p>
+    </div>
+</div>
+
+<div class="container" id="locations">
+    <h2><i class="fas fa-hospital-alt"></i> Hospital Locations
+        <div id="backButton_locations" class="back-button-container">
+            <a href="javascript:void(0)" class="back-button" onclick="goBack()"><i class="fas fa-arrow-left"></i> Back</a>
+        </div>
+    </h2>
+    
+    <div class="location-card">
+        <h3>Dr.Connect Main Campus (24/7)</h3>
+        <p><i class="fas fa-map-marker-alt"></i> **450 Health Avenue**, Suite 100, Metropolis, 10001</p>
+        <p><i class="fas fa-phone"></i> (555) 123-4567</p>
+        <p><i class="fas fa-clock"></i> Open **24/7** for Emergencies</p>
+        <div class="map-placeholder">
+            <a href="https://maps.google.com/?q=450+Health+Avenue,+Metropolis" target="_blank">
+                <i class="fas fa-map-pin"></i> View on Google Maps
+            </a>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Click the link above for directions.</p>
+        </div>
+    </div>
+    
+    <div class="location-card">
+        <h3>Dr.Connect West Clinic</h3>
+        <p><i class="fas fa-map-marker-alt"></i> **789 Wellness Drive**, Unit B, West Town, 90210</p>
+        <p><i class="fas fa-phone"></i> (555) 987-6543</p>
+        <p><i class="fas fa-clock"></i> Mon-Fri: **8:00 AM - 5:00 PM**</p>
+        <div class="map-placeholder">
+            <a href="http://googleusercontent.com/maps.google.com/west_clinic" target="_blank">
+                <i class="fas fa-map-pin"></i> View on Google Maps
+            </a>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">Click the link above for directions.</p>
+        </div>
+        </div>
+</div>
+
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <i class="fas fa-check-circle"></i>
+        <p style="font-size: 1.2em; font-weight: 600;">Appointment booked successfully!</p>
+        <button onclick="closeModal()">Close</button>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById("appointmentForm");
+    const appointmentList = document.getElementById("appointmentList");
+    const doctorInput = document.getElementById("doctorName");
+    const modal = document.getElementById("modal");
+
+    // Array to store history of visited pages
+    let pageHistory = [];
+
+    // NEW: Function to update the back button visibility within the current container
+    function updateBackButton(currentPageId) {
+        // Hide all back buttons first
+        document.querySelectorAll('.back-button-container').forEach(btn => {
+            btn.style.display = 'none';
+        });
+
+        // Show the back button only in the active container if there is history
+        if (pageHistory.length > 0) {
+            const backBtnContainer = document.getElementById(`backButton_${currentPageId}`);
+            if (backBtnContainer) {
+                backBtnContainer.style.display = 'block';
+            }
+        }
+    }
+
+    // MODIFIED: showPage function to track history
+    function showPage(pageId, recordHistory = true) {
+        // Find the currently active page before switching
+        const activePage = document.querySelector('.container.active');
+        
+        if (activePage && recordHistory && activePage.id !== pageId) {
+            // Push the ID of the page we are moving *from*
+            pageHistory.push(activePage.id);
+        }
+
+        // Remove 'active' from all content containers
+        document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+        // Add 'active' to the selected container
+        document.getElementById(pageId).classList.add('active');
+
+        // Update 'nav-active' class for navigation links
+        document.querySelectorAll('nav a').forEach(a => a.classList.remove('nav-active'));
+        const navLink = document.querySelector(`nav a[onclick="showPage('${pageId}')"]`);
+        if (navLink) {
+            navLink.classList.add('nav-active');
+        }
+
+        // Update back button status for the NEW active page
+        updateBackButton(pageId);
+    }
+
+    // NEW: goBack function to navigate history
+    function goBack() {
+        if (pageHistory.length > 0) {
+            // Pop the last visited page ID
+            const previousPageId = pageHistory.pop();
+            // Show that page, but do NOT record this navigation in history (recordHistory = false)
+            showPage(previousPageId, false);
+        }
+    }
+
+    // Call showPage once on load to establish the initial state
+    document.addEventListener('DOMContentLoaded', () => {
+        showPage('home', false); // Start on home, don't record 'home' in history initially
+    });
+
+
+    function selectDoctor(nameAndLocation) {
+        doctorInput.value = nameAndLocation;
+        showPage('book'); // show booking page
+    }
+
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById("patientName").value;
+        const doctor = doctorInput.value;
+        const date = document.getElementById("date").value;
+        const time = document.getElementById("time").value;
+        const reason = document.getElementById("reason").value;
+
+        const appointmentCard = document.createElement("div");
+        appointmentCard.className = "appointment-card";
+        appointmentCard.innerHTML = `
+            <strong style="color:var(--header-color);">${doctor}</strong><br>
+            <span style="font-weight:600;">Date:</span> ${date} <i class="fas fa-clock"></i> ${time}<br>
+            <span style="font-weight:600;">Reason:</span> ${reason}
+        `;
+
+        if (appointmentList.querySelector("p")) {
+            appointmentList.innerHTML = "";
+        }
+        appointmentList.appendChild(appointmentCard);
+
+        form.reset();
+        doctorInput.value = ""; 
+        
+        modal.style.display = "flex";
+    });
+
+    function closeModal() {
+        modal.style.display = "none";
+        // If the user books and closes the modal, they go to 'myappointments'. 
+        // We explicitly navigate, so we don't need to check and pop history here.
+        showPage('myappointments'); 
+    }
+
+    // Doctor Search Functionality
+    const searchInput = document.getElementById("searchDoctor");
+    searchInput.addEventListener("input", function() {
+        const filter = this.value.toLowerCase();
+        const cards = document.querySelectorAll(".doctor-card");
+        cards.forEach(card => {
+            const textContent = card.textContent.toLowerCase(); 
+            card.style.display = textContent.includes(filter) ? "flex" : "none";
+        });
+    });
+</script>
+</body>
+</html>
