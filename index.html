@@ -7,10 +7,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
-            --primary-color: #000066; /* Navy Blue */
+            --primary-color: #000066; /* Darker navy */
             --secondary-color: #28a745; /* Calming Green */
             --background-color: #f4f8fb;
-            --header-color: #000080; /* Darker Navy */
+            --header-color: #022c81; /* blue */
             --text-dark: #333;
             --text-light: #fff;
         }
@@ -21,7 +21,7 @@
             
             /* --- THEMED BACKGROUND --- */
             background-color: #eaf3f9; 
-            background: url("how_to_build_a_doctor_appointment_app_for_y.format-webp (2).webp")
+            background: url("https://media.globaldev.tech/images/how_to_build_a_doctor_appointment_app_for_y.format-webp.webp")
                 no-repeat center center fixed;
             background-size: cover;
             color: var(--text-dark);
@@ -192,14 +192,14 @@
             grid-template-columns: 1fr 1fr;
             gap: 20px; 
         }
-        form input, form select, form textarea { 
+        form input, form select, form textarea { /* ADDED form select */
             padding: 12px; 
             border: 1px solid #ccc; 
             border-radius: 6px; 
             font-size: 1em;
             transition: border-color 0.3s;
         }
-        form input:focus, form textarea:focus { 
+        form input:focus, form select:focus, form textarea:focus { /* ADDED form select */
             border-color: var(--primary-color);
             outline: none;
         }
@@ -354,37 +354,37 @@
     </h2>
     <input type="text" id="searchDoctor" placeholder="Search by name, specialty, or location...">
     
-    <div class="doctor-card">
+    <div class="doctor-card" data-doctor-id="1">
         <div class="doctor-info">
             <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Dr. Asha Sharma">
             <div>
-                <strong>Dr. Asha Sharma</strong> - Cardiologist<br>
+                <strong class="doc-name-specialty">Dr. Asha Sharma - Cardiologist</strong><br>
                 <small><i class="fas fa-star" style="color:gold;"></i> 4.8 | 10 years experience</small>
-                <p class="doc-location"><i class="fas fa-map-marker-alt"></i> **Main Campus** - 450 Health Avenue</p> </div>
+                <p class="doc-location" data-location="Main Campus"><i class="fas fa-map-marker-alt"></i> **Main Campus** - 450 Health Avenue</p> </div>
         </div>
-        <button onclick="selectDoctor('Dr. Asha Sharma - Cardiologist @ Main Campus')"><i class="fas fa-calendar-alt"></i> Book Slot</button>
+        <button onclick="selectDoctor(1)"><i class="fas fa-calendar-alt"></i> Book Slot</button>
     </div>
     
-    <div class="doctor-card">
+    <div class="doctor-card" data-doctor-id="2">
         <div class="doctor-info">
             <img src="https://randomuser.me/api/portraits/men/66.jpg" alt="Dr. Ravi Kumar">
             <div>
-                <strong>Dr. Ravi Kumar</strong> - Dentist<br>
+                <strong class="doc-name-specialty">Dr. Ravi Kumar - Dentist</strong><br>
                 <small><i class="fas fa-star" style="color:gold;"></i> 4.5 | 7 years experience</small>
-                <p class="doc-location"><i class="fas fa-map-marker-alt"></i> **West Clinic** - 789 Wellness Drive</p> </div>
+                <p class="doc-location" data-location="West Clinic"><i class="fas fa-map-marker-alt"></i> **West Clinic** - 789 Wellness Drive</p> </div>
         </div>
-        <button onclick="selectDoctor('Dr. Ravi Kumar - Dentist @ West Clinic')"><i class="fas fa-calendar-alt"></i> Book Slot</button>
+        <button onclick="selectDoctor(2)"><i class="fas fa-calendar-alt"></i> Book Slot</button>
     </div>
     
-    <div class="doctor-card">
+    <div class="doctor-card" data-doctor-id="3">
         <div class="doctor-info">
             <img src="https://randomuser.me/api/portraits/women/67.jpg" alt="Dr. Sneha Patel">
             <div>
-                <strong>Dr. Sneha Patel</strong> - Dermatologist<br>
+                <strong class="doc-name-specialty">Dr. Sneha Patel - Dermatologist</strong><br>
                 <small><i class="fas fa-star" style="color:gold;"></i> 4.9 | 5 years experience</small>
-                <p class="doc-location"><i class="fas fa-map-marker-alt"></i> **Main Campus** - 450 Health Avenue</p> </div>
+                <p class="doc-location" data-location="Main Campus"><i class="fas fa-map-marker-alt"></i> **Main Campus** - 450 Health Avenue</p> </div>
         </div>
-        <button onclick="selectDoctor('Dr. Sneha Patel - Dermatologist @ Main Campus')"><i class="fas fa-calendar-alt"></i> Book Slot</button>
+        <button onclick="selectDoctor(3)"><i class="fas fa-calendar-alt"></i> Book Slot</button>
     </div>
 </div>
 
@@ -398,7 +398,10 @@
         <input type="text" id="patientName" placeholder="Your Full Name" required>
         <input type="email" id="email" placeholder="Email Address" required>
         <input type="tel" id="phone" placeholder="Phone Number" required>
-        <input type="text" id="doctorName" placeholder="Selected Doctor" readonly required style="background: #f0f0f0; font-weight: bold;">
+        
+        <select id="doctorSelect" required>
+            <option value="" disabled selected>--- Select a Doctor ---</option>
+            </select>
         <input type="date" id="date" required>
         <input type="time" id="time" required>
         <textarea id="reason" rows="3" placeholder="Reason for visit (e.g., Cold symptoms, Follow-up)" required></textarea>
@@ -462,13 +465,36 @@
 <script>
     const form = document.getElementById("appointmentForm");
     const appointmentList = document.getElementById("appointmentList");
-    const doctorInput = document.getElementById("doctorName");
+    // const doctorInput = document.getElementById("doctorName"); // REMOVED: Replaced by select
+    const doctorSelect = document.getElementById("doctorSelect"); // NEW: Reference to the select menu
     const modal = document.getElementById("modal");
+
+    // NEW: Define the list of doctors for the dropdown
+    const doctorsData = [
+        { id: 1, name: "Dr. Asha Sharma", specialty: "Cardiologist", location: "Main Campus" },
+        { id: 2, name: "Dr. Ravi Kumar", specialty: "Dentist", location: "West Clinic" },
+        { id: 3, name: "Dr. Sneha Patel", specialty: "Dermatologist", location: "Main Campus" }
+    ];
+
+    // NEW: Function to populate the doctor dropdown
+    function populateDoctorDropdown() {
+        // Clear existing options, keeping the initial disabled one
+        doctorSelect.innerHTML = '<option value="" disabled selected>--- Select a Doctor ---</option>';
+
+        doctorsData.forEach(doc => {
+            const option = document.createElement('option');
+            // The value is a combined string for easy display in the appointment list
+            option.value = `${doc.name} - ${doc.specialty} @ ${doc.location}`;
+            option.textContent = `${doc.name} (${doc.specialty}) - ${doc.location}`;
+            option.dataset.doctorId = doc.id; // Store doctor ID if needed later
+            doctorSelect.appendChild(option);
+        });
+    }
 
     // Array to store history of visited pages
     let pageHistory = [];
 
-    // NEW: Function to update the back button visibility within the current container
+    // Function to update the back button visibility within the current container
     function updateBackButton(currentPageId) {
         // Hide all back buttons first
         document.querySelectorAll('.back-button-container').forEach(btn => {
@@ -486,11 +512,9 @@
 
     // MODIFIED: showPage function to track history
     function showPage(pageId, recordHistory = true) {
-        // Find the currently active page before switching
         const activePage = document.querySelector('.container.active');
         
         if (activePage && recordHistory && activePage.id !== pageId) {
-            // Push the ID of the page we are moving *from*
             pageHistory.push(activePage.id);
         }
 
@@ -506,36 +530,36 @@
             navLink.classList.add('nav-active');
         }
 
-        // Update back button status for the NEW active page
         updateBackButton(pageId);
     }
 
     // NEW: goBack function to navigate history
     function goBack() {
         if (pageHistory.length > 0) {
-            // Pop the last visited page ID
             const previousPageId = pageHistory.pop();
-            // Show that page, but do NOT record this navigation in history (recordHistory = false)
             showPage(previousPageId, false);
         }
     }
 
-    // Call showPage once on load to establish the initial state
-    document.addEventListener('DOMContentLoaded', () => {
-        showPage('home', false); // Start on home, don't record 'home' in history initially
-    });
-
-
-    function selectDoctor(nameAndLocation) {
-        doctorInput.value = nameAndLocation;
-        showPage('book'); // show booking page
+    // MODIFIED: selectDoctor function
+    function selectDoctor(doctorId) {
+        // Find the full doctor string from the data
+        const selectedDoc = doctorsData.find(doc => doc.id === doctorId);
+        if (selectedDoc) {
+            const fullDoctorString = `${selectedDoc.name} - ${selectedDoc.specialty} @ ${selectedDoc.location}`;
+            
+            // Set the value of the dropdown and show the booking page
+            doctorSelect.value = fullDoctorString;
+            showPage('book'); 
+        }
     }
 
     form.addEventListener("submit", function(e) {
         e.preventDefault();
 
         const name = document.getElementById("patientName").value;
-        const doctor = doctorInput.value;
+        // CHANGED: Get value from the select element
+        const doctor = doctorSelect.value; 
         const date = document.getElementById("date").value;
         const time = document.getElementById("time").value;
         const reason = document.getElementById("reason").value;
@@ -554,19 +578,17 @@
         appointmentList.appendChild(appointmentCard);
 
         form.reset();
-        doctorInput.value = ""; 
+        doctorSelect.value = ""; // Reset the dropdown to the default option
         
         modal.style.display = "flex";
     });
 
     function closeModal() {
         modal.style.display = "none";
-        // If the user books and closes the modal, they go to 'myappointments'. 
-        // We explicitly navigate, so we don't need to check and pop history here.
         showPage('myappointments'); 
     }
 
-    // Doctor Search Functionality
+    // Doctor Search Functionality (Still searches the cards, but we modified 'selectDoctor' to work with the data array)
     const searchInput = document.getElementById("searchDoctor");
     searchInput.addEventListener("input", function() {
         const filter = this.value.toLowerCase();
@@ -575,6 +597,13 @@
             const textContent = card.textContent.toLowerCase(); 
             card.style.display = textContent.includes(filter) ? "flex" : "none";
         });
+    });
+
+
+    // Call on load: Populate the dropdown and set initial page
+    document.addEventListener('DOMContentLoaded', () => {
+        populateDoctorDropdown(); // NEW: Populate the list of doctors
+        showPage('home', false); // Start on home, don't record 'home' in history initially
     });
 </script>
 </body>
